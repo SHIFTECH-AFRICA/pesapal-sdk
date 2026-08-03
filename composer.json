@@ -1,0 +1,72 @@
+{
+    "name": "shiftechafrica/pesapal-laravel-sdk",
+    "description": "A production-grade Laravel SDK for Pesapal API 3.0 card and hosted checkout payments.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "pesapal",
+        "laravel",
+        "kenya",
+        "payments",
+        "visa",
+        "mastercard",
+        "fintech"
+    ],
+    "authors": [
+        {
+            "name": "Shiftech Africa",
+            "email": "info@shiftech.co.ke"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "guzzlehttp/guzzle": "^7.8",
+        "illuminate/cache": "^10.0 || ^11.0 || ^12.0 || ^13.0",
+        "illuminate/console": "^10.0 || ^11.0 || ^12.0 || ^13.0",
+        "illuminate/contracts": "^10.0 || ^11.0 || ^12.0 || ^13.0",
+        "illuminate/support": "^10.0 || ^11.0 || ^12.0 || ^13.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^2.9 || ^3.0",
+        "laravel/pint": "^1.18",
+        "orchestra/testbench": "^8.0 || ^9.0 || ^10.0 || ^11.0",
+        "phpunit/phpunit": "^10.5 || ^11.0 || ^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "ShiftechAfrica\\Pesapal\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ShiftechAfrica\\Pesapal\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "analyse": "phpstan analyse",
+        "format": "pint",
+        "check": [
+            "@test",
+            "@analyse"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "ShiftechAfrica\\Pesapal\\PesapalServiceProvider"
+            ],
+            "aliases": {
+                "Pesapal": "ShiftechAfrica\\Pesapal\\Facades\\Pesapal"
+            }
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

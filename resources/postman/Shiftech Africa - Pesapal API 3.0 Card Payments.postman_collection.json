@@ -1,0 +1,343 @@
+{
+  "info": {
+    "_postman_id": "75deeefc-844b-4644-823f-3c63541c1c09",
+    "name": "Shiftech Africa - Pesapal API 3.0 Card Payments",
+    "description": "Sanitized and corrected hosted Visa/Mastercard workflow. Card details are entered only on Pesapal redirect_url.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Authentication",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{protocol}}{{api-host}}{{api-url}}Auth/RequestToken",
+          "host": [
+            "{{protocol}}{{api-host}}{{api-url}}Auth"
+          ],
+          "path": [
+            "RequestToken"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"consumer_key\": \"{{consumer_key_ke}}\",\n  \"consumer_secret\": \"{{consumer_secret_ke}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Authentication accepted', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json(); if (body.token) pm.environment.set('jwt-token', body.token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Register IPN",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{jwt-token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{protocol}}{{api-host}}{{api-url}}URLSetup/RegisterIPN",
+          "host": [
+            "{{protocol}}{{api-host}}{{api-url}}URLSetup"
+          ],
+          "path": [
+            "RegisterIPN"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"url\": \"{{ipn_url}}\",\n  \"ipn_notification_type\": \"POST\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('IPN registration accepted', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json(); if (body.ipn_id) pm.environment.set('notification_id', body.ipn_id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. List IPNs",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{jwt-token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{protocol}}{{api-host}}{{api-url}}URLSetup/GetIpnList",
+          "host": [
+            "{{protocol}}{{api-host}}{{api-url}}URLSetup"
+          ],
+          "path": [
+            "GetIpnList"
+          ]
+        }
+      }
+    },
+    {
+      "name": "4. Submit Hosted Card Order",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{jwt-token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{protocol}}{{api-host}}{{api-url}}Transactions/SubmitOrderRequest",
+          "host": [
+            "{{protocol}}{{api-host}}{{api-url}}Transactions"
+          ],
+          "path": [
+            "SubmitOrderRequest"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": \"BANK-CARD-{{$timestamp}}\",\n  \"currency\": \"{{currency}}\",\n  \"amount\": 100.0,\n  \"description\": \"Hosted Visa or Mastercard payment\",\n  \"callback_url\": \"{{callback_url}}\",\n  \"notification_id\": \"{{notification_id}}\",\n  \"billing_address\": {\n    \"email_address\": \"customer@example.com\",\n    \"phone_number\": \"0712345678\",\n    \"country_code\": \"KE\",\n    \"first_name\": \"Amina\",\n    \"middle_name\": \"\",\n    \"last_name\": \"Kamau\",\n    \"line_1\": \"\",\n    \"line_2\": \"\",\n    \"city\": \"Nairobi\",\n    \"state\": \"\",\n    \"postal_code\": \"\",\n    \"zip_code\": \"\"\n  }\n}"
+        },
+        "description": "Open redirect_url for Pesapal-hosted card entry. Never send PAN or CVV to SubmitOrderRequest."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Order created', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json(); if (body.order_tracking_id) pm.environment.set('order-tracking-id', body.order_tracking_id); if (body.merchant_reference) pm.environment.set('merchant-reference', body.merchant_reference);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Get Transaction Status",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{jwt-token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{protocol}}{{api-host}}{{api-url}}Transactions/GetTransactionStatus?orderTrackingId={{order-tracking-id}}",
+          "host": [
+            "{{protocol}}{{api-host}}{{api-url}}Transactions"
+          ],
+          "path": [
+            "GetTransactionStatus?orderTrackingId={{order-tracking-id}}"
+          ],
+          "query": [
+            {
+              "key": "orderTrackingId",
+              "value": "{{order-tracking-id}}"
+            }
+          ]
+        },
+        "description": "Corrected official path. Verify reference, amount, currency and status locally."
+      }
+    },
+    {
+      "name": "6. Submit Recurring Card Enrollment",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{jwt-token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{protocol}}{{api-host}}{{api-url}}Transactions/SubmitOrderRequest",
+          "host": [
+            "{{protocol}}{{api-host}}{{api-url}}Transactions"
+          ],
+          "path": [
+            "SubmitOrderRequest"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": \"SUB-{{$timestamp}}\",\n  \"currency\": \"{{currency}}\",\n  \"amount\": 100.0,\n  \"description\": \"Monthly card subscription\",\n  \"callback_url\": \"{{callback_url}}\",\n  \"notification_id\": \"{{notification_id}}\",\n  \"account_number\": \"MEMBER-1001\",\n  \"subscription_details\": {\n    \"start_date\": \"04-08-2026\",\n    \"end_date\": \"04-08-2027\",\n    \"frequency\": \"MONTHLY\"\n  },\n  \"billing_address\": {\n    \"email_address\": \"customer@example.com\",\n    \"phone_number\": \"0712345678\",\n    \"country_code\": \"KE\",\n    \"first_name\": \"Amina\",\n    \"middle_name\": \"\",\n    \"last_name\": \"Kamau\",\n    \"line_1\": \"\",\n    \"line_2\": \"\",\n    \"city\": \"Nairobi\",\n    \"state\": \"\",\n    \"postal_code\": \"\",\n    \"zip_code\": \"\"\n  }\n}"
+        }
+      }
+    },
+    {
+      "name": "7. Refund Request",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{jwt-token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{protocol}}{{api-host}}{{api-url}}Transactions/RefundRequest",
+          "host": [
+            "{{protocol}}{{api-host}}{{api-url}}Transactions"
+          ],
+          "path": [
+            "RefundRequest"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"confirmation_code\": \"{{confirmation_code}}\",\n  \"amount\": 100.0,\n  \"username\": \"Merchant Operator\",\n  \"remarks\": \"Approved customer refund\"\n}"
+        }
+      }
+    },
+    {
+      "name": "8. Cancel Pending or Failed Order",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{jwt-token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{protocol}}{{api-host}}{{api-url}}Transactions/CancelOrder",
+          "host": [
+            "{{protocol}}{{api-host}}{{api-url}}Transactions"
+          ],
+          "path": [
+            "CancelOrder"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_tracking_id\": \"{{order-tracking-id}}\"\n}"
+        }
+      }
+    }
+  ]
+}

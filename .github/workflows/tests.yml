@@ -1,0 +1,63 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.2'
+            laravel: '10'
+            testbench: '8'
+          - php: '8.2'
+            laravel: '11'
+            testbench: '9'
+          - php: '8.3'
+            laravel: '12'
+            testbench: '10'
+          - php: '8.4'
+            laravel: '13'
+            testbench: '11'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer:v2
+
+      - name: Select Laravel matrix dependencies
+        run: |
+          composer require --dev \
+            "illuminate/support:^${{ matrix.laravel }}.0" \
+            "orchestra/testbench:^${{ matrix.testbench }}.0" \
+            --no-interaction --no-update
+
+      - uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: highest
+
+      - run: composer test
+
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer:v2
+      - uses: ramsey/composer-install@v3
+      - run: vendor/bin/pint --test
+      - run: composer analyse
