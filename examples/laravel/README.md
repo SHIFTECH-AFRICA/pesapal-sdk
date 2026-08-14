@@ -87,3 +87,6 @@ docker compose down -v
 ```
 
 Because the path repository uses `symlink: true`, edits to the SDK source at the repository root are consumed by this Dockerized Laravel demo without publishing the package.
+
+
+docker compose exec app php artisan pesapal:ipn:register "https://d108-154-159-254-213.ngrok-free.app/api/payments/pesapal/ipn" --method=POST

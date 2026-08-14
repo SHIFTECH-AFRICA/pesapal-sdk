@@ -3,10 +3,54 @@
 use App\Http\Controllers\PesapalPaymentController;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'payments.checkout')->name('payments.demo');
+/*
+|--------------------------------------------------------------------------
+| Checkout page
+|--------------------------------------------------------------------------
+|
+| No variables are needed on the initial GET.
+| checkout.blade.php detects that $pesapalUrl is absent
+| and displays the payment form.
+|
+*/
 
-Route::post('/payments/pesapal/checkout', [PesapalPaymentController::class, 'checkout'])
-    ->name('pesapal.checkout');
+Route::view('/', 'payments.checkout')
+    ->name('payments.demo');
 
-Route::match(['GET', 'POST'], '/payments/pesapal/callback', [PesapalPaymentController::class, 'callback'])
-    ->name('pesapal.callback');
+
+/*
+|--------------------------------------------------------------------------
+| Create Pesapal order
+|--------------------------------------------------------------------------
+*/
+
+Route::post(
+    '/payments/pesapal/checkout',
+    [PesapalPaymentController::class, 'checkout']
+)->name('pesapal.checkout');
+
+
+/*
+|--------------------------------------------------------------------------
+| Pesapal callback
+|--------------------------------------------------------------------------
+*/
+
+Route::match(
+    ['GET', 'POST'],
+    '/payments/pesapal/callback',
+    [PesapalPaymentController::class, 'callback']
+)->name('pesapal.callback');
+
+
+/*
+|--------------------------------------------------------------------------
+| Pesapal IPN
+|--------------------------------------------------------------------------
+*/
+
+Route::match(
+    ['GET', 'POST'],
+    '/payments/pesapal/ipn',
+    [PesapalPaymentController::class, 'ipn']
+)->name('pesapal.ipn');
