@@ -47,8 +47,8 @@ services:
     image: nginx:1.27-alpine
 
     ports:
-      - "8009:80"
-      - "8443:443"
+      - "80:80"
+      - "443:443"
 
     volumes:
       - ../..:/workspace:ro
