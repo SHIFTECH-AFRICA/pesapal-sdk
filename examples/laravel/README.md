@@ -30,19 +30,8 @@ From this directory:
 docker compose up --build -d
 ```
 
-No fixed Windows host port is reserved. Docker allocates an available port for Nginx. Find it with:
-
-```bash
-docker compose port nginx 80
-```
-
-Example output:
-
-```text
-0.0.0.0:49172
-```
-
-Open `http://localhost:49172` using the port Docker returned on your machine.
+Nginx listens on port `8009` inside the container and is published on the same
+host port. Open `http://localhost:8009` after the containers start.
 
 PostgreSQL is reachable only inside the Compose network as `pgsql:5432`; it is not published to Windows.
 
