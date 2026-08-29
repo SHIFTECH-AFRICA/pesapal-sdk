@@ -1,9 +1,0 @@
-/.env
-/.phpunit.result.cache
-/.phpunit.cache
-/vendor
-/storage/*.key
-/storage/pail
-/storage/logs/*.log
-/bootstrap/cache/*.php
-!/bootstrap/cache/.gitignore
